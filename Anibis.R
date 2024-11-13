@@ -2,8 +2,6 @@ library(rvest)
 library(stringr)
 
 # https://www.anibis.ch/robots.txt does not mention /mobilier*
-# I cannot find ToS on the website
-# => webscraping seems to be tolerated
 
 # web scrape 140x200 or 140x190 beds sold by individuals from anibis
 # first research page
