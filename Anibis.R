@@ -30,14 +30,16 @@ for(j in 1:number_of_pages){
   # get all infos
   infos <- website %>% html_nodes("span.MuiTypography-root") %>% html_text()
   n <- length(infos)
-  infos <- infos[-c(1:33, (n-20):n)] # remove unwanted infos (first 34 entries and last 20 entries)
+  infos <- infos[-c(1:21, (n-20):n)] # remove unwanted infos (first 21 entries and last 20 entries)
   n <- length(infos)
   if(n %% 3!=0) stop("Error: number of infos is not a multiple of 3")
   
   for(i in seq(2,n,by=3)){
-    if(grepl("140\\s*\\S\\s*200", infos[i]) || grepl("140\\s*\\S\\s*190", infos[i])){
+    if(grepl("140(.|\n)+200", infos[i]) || grepl("140(.|\n)+190", infos[i])){
       # price
       if(grepl("Gratuit",infos[i+1])) next
+      # update iterator
+      int <- int + 1L
       price[int] <- as.integer(gsub("\\W*","",infos[i+1]))
       
       
@@ -54,12 +56,8 @@ for(j in 1:number_of_pages){
               dates[int] <- NA_character_
             }
           }
-            
+          
         }
-      
-      
-      # update iterator
-      int <- int + 1L
     }
   }
   cat(j,"/",number_of_pages,"\n")
@@ -80,7 +78,6 @@ for(i in seq_along(region)){
 
 # create a data frame with difference price - discount
 anibis <- data.frame(region = region2, price = price, dates = as.Date(dates, format = "%d.%m.%Y"))
-
 # plot price vs difference
 library(ggplot2)
 library(MASS)
@@ -91,10 +88,12 @@ prediction <- predict(fit, data.frame(region = "Region Lausanne, Echallens (Nort
 ggplot(anibis, aes(y = price, x = dates, color = region)) + 
   geom_point(size = 5) +
   labs(title = paste0("Price of 140x200 or 140x190 beds sold by individuals on Anibis.ch (update ",Sys.Date(),")"),
-        x = "Dates",
-        y = "Price") +
+       x = "Dates",
+       y = "Price") +
   theme_minimal() + 
   geom_hline(yintercept = prediction[1], color = "blue")
 
 # save data
 save(anibis, file = "anibis.rds")
+# print the data set 
+anibis
